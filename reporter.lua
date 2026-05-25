@@ -8,6 +8,13 @@ local UserInputService = getService("UserInputService")
 local GuiService = getService("GuiService")
 local HttpService = getService("HttpService")
 
+-- Capture getgenv at load time. When reporter.lua is loadstring'd standalone
+-- (e.g. by the sirius-gate gateway-injected analytics path), there's no outer
+-- scope binding `_getgenv` — bare `_getgenv()` calls would resolve to nil and
+-- the pcall would swallow the failure, silently zeroing secureMode + customAssetId
+-- on every gateway-injected event. source.lua does the same capture at its top.
+local _getgenv = rawget(_G, "getgenv")
+
 -- ── SHA-256 (pure Luau) — privacy-focused one-way hash of UserId ─────────────
 -- Produces a 64-char hex digest. The server re-hashes this with a secret key
 -- (HMAC-SHA-256) before storage, so even if analytics data leaks the stored
